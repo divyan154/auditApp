@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+import opencage from "opencage-api-client";
 type Question = {
   _id: string;
   questionType: string;
@@ -14,6 +15,7 @@ type AuditData = {
   outletName: string;
   location: string;
   cleanliness: number;
+  image: File | null;
 };
 
 export default function AuditPage() {
@@ -22,7 +24,7 @@ export default function AuditPage() {
   const [auditData, setAuditData] = useState<AuditData>({
     location: "",
     outletName: "",
-
+    image: null,
     cleanliness: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -42,10 +44,15 @@ export default function AuditPage() {
 
         // Auto-detect location
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
+          async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            const displayLocation = await getHumanReadableLocation(
+              latitude,
+              longitude
+            );
             setAuditData((prev) => ({
               ...prev,
-              location: `${pos.coords.latitude},${pos.coords.longitude}`,
+              location: displayLocation,
             }));
           },
           (err) => {
@@ -73,16 +80,42 @@ export default function AuditPage() {
     }));
   };
 
-  //   const handleFileUpload = (questionId: string, file: File) => {
-  //     setAuditData((prev) => ({
-  //       ...prev,
-  //       answers: {
-  //         ...prev.answers,
-  //         [questionId]: file,
-  //       },
-  //     }));
-  //   };
-
+  const handleFileUpload = (file: File) => {
+    setAuditData((prev) => ({
+      ...prev,
+      image: file,
+    }));
+  };
+  const getHumanReadableLocation = async (
+    lat: number,
+    lon: number
+  ): Promise<string> => {
+    try {
+      const data = await opencage.geocode({
+        key: process.env.NEXT_PUBLIC_OPENCAGE_API_KEY,
+        q: `${lat}, ${lon}`,
+        language: "fr",
+      });
+      if (data.status.code === 200 && data.results.length > 0) {
+        const city = data.results[0].components.city;
+        const state = data.results[0].components.state;
+        const res = city + " , " + state;
+        // console.log(state);
+        return res;
+      } else {
+        console.log("status", data.status.message);
+        console.log("total_results", data.total_results);
+        return "";
+      }
+    } catch (error: any) {
+      console.log("error", error.message);
+      if (error.status && error.status.code === 402) {
+        console.log("hit free trial daily limit");
+        console.log("become a customer: https://opencagedata.com/pricing");
+      }
+      return "";
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -92,6 +125,9 @@ export default function AuditPage() {
       formData.append("location", auditData.location);
       formData.append("outletName", auditData.outletName);
       formData.append("cleanliness", auditData.cleanliness.toString());
+      if (auditData.image) {
+        formData.append("image", auditData.image);
+      }
 
       console.log(auditData);
 
@@ -107,9 +143,10 @@ export default function AuditPage() {
         }
       );
 
-      if (!response || response.status !== 200) {
+      if ( response.status !== 201) {
         throw new Error("Audit submission failed");
       }
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
@@ -172,7 +209,7 @@ export default function AuditPage() {
                   <option value="5">Excellent</option>
                 </select>
               )}
-              {/* 
+
               {question.questionType === "image" && (
                 <input
                   type="file"
@@ -184,7 +221,7 @@ export default function AuditPage() {
                   required
                   capture="environment"
                 />
-              )} */}
+              )}
             </div>
           ))}
         </div>

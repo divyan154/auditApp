@@ -1,4 +1,5 @@
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -7,9 +8,12 @@ const bcrypt = require("bcrypt");
 const User = require("./models/User");
 const authenticateToken = require("./middleware");
 const mongoose = require("mongoose");
-const upload = multer();
+const upload = multer({ storage: multer.memoryStorage() });
 const cookieParser = require("cookie-parser");
 const Question = require("./models/Questions");
+const Audit = require("./models/Audit.js");
+const supabase = require("./utils/supabase.js");
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/audit")
   .then(() => {
@@ -88,10 +92,54 @@ app.get("/questions", async (req, res) => {
   res.send(questions);
 });
 
-app.post("/audit", upload.none(), (req, res) => {
-  console.log("Request for New Audit Recieved");
-  console.log(req.body);
-  res.send("Recived");
+app.post("/audit", upload.single("image"), async (req, res) => {
+  console.log("Request for New Audit Received");
+
+  const { outletName, location, cleanliness } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: "Image is required" });
+  }
+
+  const fileName = `${Date.now()}-${file.originalname}`;
+
+  try {
+    // Upload image buffer to Supabase
+    const { data, error } = await supabase.storage
+      .from("uploads") // your Supabase bucket name
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Upload error:", error.message);
+      return res.status(500).json({ error: "Image upload failed" });
+    }
+
+    // Get the public URL
+    const { data: publicUrlData } = supabase.storage
+      .from("uploads")
+      .getPublicUrl(fileName);
+
+    const imageUrl = publicUrlData.publicUrl;
+    console.log(imageUrl);
+    // Create new audit entry with image URL
+    const newAudit = new Audit({
+      outletName,
+      location,
+      cleanliness,
+      imageUrl,
+    });
+
+    await newAudit.save();
+
+    res.status(201).json({ message: "Audit submitted", audit: newAudit });
+  } catch (err) {
+    console.error("Error saving audit:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 app.listen(3001, () => {
   console.log("Listening to port 3001");

@@ -1,9 +1,31 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
+const auditSchema = new mongoose.Schema({
+  outletName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  location: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  cleanliness: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5, // You can adjust this based on your rating scale
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  imageUrl: {
+    type: String,
+    required: true,
+  },
 });
 
-const User = new mongoose.model("User", UserSchema);
-module.exports = User;
+const Audit = mongoose.model("Audit", auditSchema);
+module.exports = Audit;
