@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
-
 router.post("/register", async (req, res) => {
   const { name, password, email } = req.body.formData;
   console.log(name, email, password);
@@ -48,8 +47,14 @@ router.post("/login", async (req, res) => {
     };
 
     // 4. Sign token with expiration
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET);
-    res.cookie("token", accessToken);
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "1d",
+    });
+    res.cookie("token", accessToken, {
+      httpOnly: true,
+      sameSite: "Lax",
+      secure: process.env.NODE_ENV === "production",
+    });
 
     res.send("Cookie is set");
   } catch (error) {

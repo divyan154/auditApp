@@ -1,46 +1,73 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit per file
+    files: 5, // max 5 files
+  },
+});
 
 const supabase = require("../utils/supabase");
 const Audit = require("../models/Audit");
+const authenticateToken = require("../middleware");
 
-router.post("/audit", upload.array("images"), async (req, res) => {
-  try {
-    const { outletName, location, cleanliness } = req.body;
-    const uploadedUrls = [];
+router.post(
+  "/audit",
+  authenticateToken,
+  upload.array("images"),
+  async (req, res) => {
+    try {
+      // Get the user token from cookies/headers
+      const token = req.cookies.token;
 
-    for (const file of req.files) {
-      const { originalname, buffer } = file;
+      if (!token) {
+        return res.status(401).send("Missing authentication token");
+      }
 
-      const { data, error } = await supabase.storage
-        .from("uploads")
-        .upload(`${Date.now()}_${originalname}`, buffer, {
-          contentType: file.mimetype,
-        });
+      // Process file uploads
+      const uploadedUrls = [];
+      console.log("req.files", req.files);
+      for (const file of req.files) {
+        const filename = `${Date.now()}_${file.originalname}`;
 
-      if (error) throw error;
+        const { data, error } = await supabase.storage
+          .from("uploads")
+          .upload(filename, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false,
+          });
 
-      const publicURL = supabase.storage.from("uploads").getPublicUrl(data.path)
-        .data.publicUrl;
+        if (error) {
+          console.error("Supabase upload error:", error);
+          throw error;
+        }
 
-      uploadedUrls.push(publicURL);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("uploads").getPublicUrl(data.path);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      // Save to MongoDB Atlas
+      const newAudit = new Audit({
+        ...req.body,
+        imageUrls: uploadedUrls,
+        userId: req.user.id, // Ensure your authenticateToken middleware sets this
+      });
+
+      await newAudit.save();
+      res.status(201).json({ success: true, audit: newAudit });
+    } catch (err) {
+      console.error("Error in audit creation:", err);
+      res.status(500).json({
+        error: "Failed to create audit",
+        details: err.message,
+      });
     }
-
-    const newAudit = new Audit({
-      outletName,
-      location,
-      cleanliness,
-      imageUrls: uploadedUrls, // You may need to adjust schema
-    });
-
-    await newAudit.save();
-    res.status(201).send("Audit received successfully");
-  } catch (err) {
-    console.error("Error saving audit:", err);
-    res.status(500).send("Internal Server Error");
   }
-});
+);
 
 module.exports = router;

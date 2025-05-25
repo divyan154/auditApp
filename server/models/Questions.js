@@ -9,7 +9,6 @@ const questionSchema = new mongoose.Schema({
   },
   questionType: {
     type: String,
-
     default: "text",
   },
 });

@@ -12,22 +12,43 @@ const authRoutes = require("./routes/authRoutes.js");
 const questionRoutes = require("./routes/questions.js");
 
 //Connect to mongodb
+const DB_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/audit";
+
 mongoose
-  .connect("mongodb://127.0.0.1:27017/audit")
+  .connect(DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // Add these for better production stability:
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+    socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+  })
   .then(() => {
-    console.log("Connected to MongodB");
+    console.log("Connected to MongoDB successfully");
   })
   .catch((err) => {
-    console.log(err);
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1); // Exit process with failure
   });
 
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:3000", // frontend origin
-    credentials: true, // allow cookies
-  })
-);
+
+const frontend_url = process.env.NEXT_FRONTEND_URL || "http://localhost:3000";
+const corsOptions = {
+  origin: [
+    frontend_url, // for local development
+  ],
+  credentials: true, // allow cookies to be sent
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  exposedHeaders: ["Set-Cookie"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 

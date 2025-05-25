@@ -29,4 +29,4 @@ const setQuestions = async () => {
   }
 };
 
-setQuestions();
+// setQuestions();
