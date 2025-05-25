@@ -18,7 +18,7 @@ mongoose
   .connect(DB_URL, {
     // Add these for better production stability:
     serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-    socketTimeoutMS: 4500 , // Close sockets after 45s of inactivity
+    socketTimeoutMS: 4500, // Close sockets after 45s of inactivity
   })
   .then(() => {
     console.log("Connected to MongoDB successfully");
@@ -33,7 +33,7 @@ const app = express();
 // const frontend_url = "https://audit-app-dusky.vercel.app";
 const corsOptions = {
   origin: [
-    "https://audit-app-dusky.vercel.app" // for local development
+    "https://audit-app-eight.vercel.app", // for local development
   ],
   credentials: true, // allow cookies to be sent
   allowedHeaders: [
