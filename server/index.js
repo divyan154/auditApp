@@ -30,7 +30,7 @@ mongoose
 
 const app = express();
 
-const frontend_url = process.env.NEXT_FRONTEND_URL || "http://localhost:3000";
+const frontend_url = "https://audit-app-dusky.vercel.app";
 const corsOptions = {
   origin: [
     frontend_url, // for local development
