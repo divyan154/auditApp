@@ -18,7 +18,7 @@ mongoose
   .connect(DB_URL, {
     // Add these for better production stability:
     serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-    socketTimeoutMS: 4500 0, // Close sockets after 45s of inactivity
+    socketTimeoutMS: 4500 , // Close sockets after 45s of inactivity
   })
   .then(() => {
     console.log("Connected to MongoDB successfully");
