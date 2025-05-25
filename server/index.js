@@ -30,23 +30,47 @@ mongoose
 
 const app = express();
 
-// const frontend_url = "https://audit-app-dusky.vercel.app";
+const allowedOrigins = [
+  "https://audit-app-eight.vercel.app",
+  "https://audit-app-git-main-divyan154s-projects.vercel.app",
+  "http://localhost:3000", // for local development
+  process.env.FRONTEND_URL, // from environment variables
+].filter(Boolean); // removes any undefined values
+
 const corsOptions = {
-  origin: [
-    "https://audit-app-eight.vercel.app", // for local development
-  ],
-  credentials: true, // allow cookies to be sent
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.includes("vercel.app") || // Allow all Vercel preview URLs
+      origin.match(/\.vercel\.app$/)
+    ) {
+      return callback(null, true);
+    }
+
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
   allowedHeaders: [
     "Content-Type",
     "Authorization",
     "X-Requested-With",
     "Accept",
+    "X-CSRF-Token",
   ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  exposedHeaders: ["Set-Cookie"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  exposedHeaders: ["Set-Cookie", "Authorization"],
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
 };
 
 app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 app.use(express.json());
 app.use(cookieParser());
 
