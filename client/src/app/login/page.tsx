@@ -62,7 +62,7 @@ export default function LoginPage() {
         throw new Error(data.message || "Registration failed");
       }
 
-      router.push("/login");
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -79,7 +79,7 @@ export default function LoginPage() {
         <p className="mt-2 text-center text-sm text-gray-600">
           New User?{" "}
           <Link
-            href="/signup"
+            href="/register"
             className="font-medium text-indigo-600 hover:text-indigo-500"
           >
             Register
@@ -208,10 +208,10 @@ export default function LoginPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Creating account...
+                    Logging in..
                   </>
                 ) : (
-                  "Sign up"
+                  "Log in "
                 )}
               </button>
             </div>

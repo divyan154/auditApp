@@ -15,7 +15,7 @@ type AuditData = {
   outletName: string;
   location: string;
   cleanliness: number;
-  image: File | null;
+  images: File[];
 };
 
 export default function AuditPage() {
@@ -24,7 +24,7 @@ export default function AuditPage() {
   const [auditData, setAuditData] = useState<AuditData>({
     location: "",
     outletName: "",
-    image: null,
+    images: [],
     cleanliness: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,9 @@ export default function AuditPage() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/questions");
+        const response = await axios.get("http://localhost:3001/questions", {
+          withCredentials: true,
+        });
 
         if (!response) throw new Error("Failed to fetch questions");
         const data = response.data;
@@ -80,10 +82,10 @@ export default function AuditPage() {
     }));
   };
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = (files: FileList) => {
     setAuditData((prev) => ({
       ...prev,
-      image: file,
+      images: [...prev.images, ...Array.from(files)],
     }));
   };
   const getHumanReadableLocation = async (
@@ -92,7 +94,7 @@ export default function AuditPage() {
   ): Promise<string> => {
     try {
       const data = await opencage.geocode({
-        key: process.env.NEXT_PUBLIC_OPENCAGE_API_KEY,
+        key: process.env.NEXT_PUBLIC_OPENCAGE_API_KEY!,
         q: `${lat}, ${lon}`,
         language: "fr",
       });
@@ -125,10 +127,9 @@ export default function AuditPage() {
       formData.append("location", auditData.location);
       formData.append("outletName", auditData.outletName);
       formData.append("cleanliness", auditData.cleanliness.toString());
-      if (auditData.image) {
-        formData.append("image", auditData.image);
-      }
-
+      auditData.images.forEach((image) => {
+        formData.append("images", image); // note: backend will need `.array("images")`
+      });
       console.log(auditData);
 
       // Optional: view FormData entries (for debugging)
@@ -143,7 +144,7 @@ export default function AuditPage() {
         }
       );
 
-      if ( response.status !== 201) {
+      if (response.status !== 201) {
         throw new Error("Audit submission failed");
       }
       router.push("/dashboard");
@@ -160,7 +161,7 @@ export default function AuditPage() {
     return <div className="text-red-500 text-center py-8">Error: {error}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="min-h-screen  mx-auto p-6 bg-gray-50 text-[#000]">
       <h1 className="text-2xl font-bold mb-6">Audit Form</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -214,9 +215,10 @@ export default function AuditPage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    e.target.files && handleFileUpload(e.target.files[0])
-                  }
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) handleFileUpload(e.target.files);
+                  }}
                   className="w-full p-2 border rounded"
                   required
                   capture="environment"
@@ -229,7 +231,7 @@ export default function AuditPage() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 ${
+          className={`w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 ${
             loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >

@@ -42,7 +42,7 @@ export default function SignupPage() {
       formBody.append("email", formData.email);
       formBody.append("password", formData.password);
       const response = await axios.post(
-        "http://localhost:3001/login",
+        "http://localhost:3001/register",
         {
           formData: {
             name: formData.name,

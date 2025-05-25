@@ -21,10 +21,7 @@ const auditSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  imageUrl: {
-    type: String,
-    required: true,
-  },
+  imageUrls: { type: [String] },
 });
 
 const Audit = mongoose.model("Audit", auditSchema);
