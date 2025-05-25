@@ -1,13 +1,14 @@
-import React from 'react'
+import React from "react";
 import axios from "axios";
 import FormInput from "@/components/FormInput";
 import ErrorAlert from "@/components/ErrorAlert";
 import SubmitButton from "@/components/SubmitButton";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import api from "@/services/api";
 
 const LoginForm = () => {
-     const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     password: "",
@@ -36,8 +37,8 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/login",
+      const response = await api.post(
+        "/login",
         {
           formData: {
             name: formData.name,
@@ -48,7 +49,6 @@ const LoginForm = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 
@@ -66,41 +66,41 @@ const LoginForm = () => {
   };
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && <ErrorAlert message={error} />}
+      <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        {error && <ErrorAlert message={error} />}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <FormInput
-              id="name"
-              name="name"
-              label="Username"
-              value={formData.name}
-              onChange={handleChange}
-            />
-            <FormInput
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              minLength={6}
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <FormInput
-              id="confirmPassword"
-              name="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              minLength={6}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <FormInput
+            id="name"
+            name="name"
+            label="Username"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          <FormInput
+            id="password"
+            name="password"
+            label="Password"
+            type="password"
+            minLength={6}
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <FormInput
+            id="confirmPassword"
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            minLength={6}
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
 
-            <SubmitButton loading={loading} />
-          </form>
-        </div>
+          <SubmitButton loading={loading} />
+        </form>
       </div>
-  )
-}
+    </div>
+  );
+};
 
-export default LoginForm
+export default LoginForm;

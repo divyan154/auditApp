@@ -2,9 +2,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
-import opencage from "opencage-api-client";
+import getHumanReadableLocation from "@/services/geoCodeApi";
+
+import api from "@/services/api";
 type Question = {
   _id: string;
   questionType: string;
@@ -34,7 +35,7 @@ export default function AuditPage() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/questions", {
+        const response = await api.get("/questions", {
           withCredentials: true,
         });
 
@@ -88,36 +89,7 @@ export default function AuditPage() {
       images: [...prev.images, ...Array.from(files)],
     }));
   };
-  const getHumanReadableLocation = async (
-    lat: number,
-    lon: number
-  ): Promise<string> => {
-    try {
-      const data = await opencage.geocode({
-        key: process.env.NEXT_PUBLIC_OPENCAGE_API_KEY!,
-        q: `${lat}, ${lon}`,
-        language: "fr",
-      });
-      if (data.status.code === 200 && data.results.length > 0) {
-        const city = data.results[0].components.city;
-        const state = data.results[0].components.state;
-        const res = city + " , " + state;
-        // console.log(state);
-        return res;
-      } else {
-        console.log("status", data.status.message);
-        console.log("total_results", data.total_results);
-        return "";
-      }
-    } catch (error: any) {
-      console.log("error", error.message);
-      if (error.status && error.status.code === 402) {
-        console.log("hit free trial daily limit");
-        console.log("become a customer: https://opencagedata.com/pricing");
-      }
-      return "";
-    }
-  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -134,16 +106,12 @@ export default function AuditPage() {
 
       // Optional: view FormData entries (for debugging)
 
-      const response = await axios.post(
-        "http://localhost:3001/audit",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await api.post("/audit", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
 
       if (response.status !== 201) {
         throw new Error("Audit submission failed");
