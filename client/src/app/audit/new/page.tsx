@@ -161,83 +161,86 @@ export default function AuditPage() {
     return <div className="text-red-500 text-center py-8">Error: {error}</div>;
 
   return (
-    <div className="min-h-screen  mx-auto p-6 bg-gray-50 text-[#000]">
-      <h1 className="text-2xl font-bold mb-6">Audit Form</h1>
+    <div className="min-h-screen mx-auto p-6 bg-gray-50 text-[#000]">
+  <h1 className="text-2xl font-bold mb-6 text-center">Audit Form</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-4">
-          {questions.map((question) => (
-            <div key={question._id} className="space-y-2">
-              <label className="block text-sm font-medium">
-                {question.text}
-              </label>
+  <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      {questions.map((question) => (
+        <div key={question._id} className="space-y-2 max-w-md mx-auto">
+          <label className="block text-sm font-medium">
+            {question.text}
+          </label>
 
-              {question.questionType === "name" && (
-                <input
-                  type="text"
-                  value={auditData.outletName}
-                  onChange={(e) =>
-                    handleInputChange("outletName", e.target.value)
-                  }
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              )}
+          {question.questionType === "name" && (
+            <input
+              type="text"
+              value={auditData.outletName}
+              onChange={(e) =>
+                handleInputChange("outletName", e.target.value)
+              }
+              className="p-2 border rounded w-full"
+              required
+            />
+          )}
 
-              {question.questionType === "location" && (
-                <input
-                  type="text"
-                  value={auditData.location}
-                  className="w-full p-2 border rounded bg-gray-100 text-gray-700"
-                  disabled
-                  required
-                />
-              )}
+          {question.questionType === "location" && (
+            <input
+              type="text"
+              value={auditData.location}
+              className="p-2 border rounded w-full bg-gray-100 text-gray-700"
+              disabled
+              required
+            />
+          )}
 
-              {question.questionType === "rating" && (
-                <select
-                  onChange={(e) =>
-                    handleInputChange("cleanliness", Number(e.target.value))
-                  }
-                  className="w-full p-2 border rounded"
-                  required
-                >
-                  <option value="">Select</option>
-                  <option value="1">Poor</option>
-                  <option value="2">Average</option>
-                  <option value="3">Good</option>
-                  <option value="4">Very Good</option>
-                  <option value="5">Excellent</option>
-                </select>
-              )}
+          {question.questionType === "rating" && (
+            <select
+              onChange={(e) =>
+                handleInputChange("cleanliness", Number(e.target.value))
+              }
+              className="p-2 border rounded w-full"
+              required
+            >
+              <option value="">Select</option>
+              <option value="1">Poor</option>
+              <option value="2">Average</option>
+              <option value="3">Good</option>
+              <option value="4">Very Good</option>
+              <option value="5">Excellent</option>
+            </select>
+          )}
 
-              {question.questionType === "image" && (
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => {
-                    if (e.target.files) handleFileUpload(e.target.files);
-                  }}
-                  className="w-full p-2 border rounded"
-                  required
-                  capture="environment"
-                />
-              )}
-            </div>
-          ))}
+          {question.questionType === "image" && (
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                if (e.target.files) handleFileUpload(e.target.files);
+              }}
+              className="p-2 border rounded w-full"
+              required
+              capture="environment"
+            />
+          )}
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? "Submitting..." : "Submit Audit"}
-        </button>
-      </form>
+      ))}
     </div>
+
+    <div className="max-w-md mx-auto">
+      <button
+        type="submit"
+        disabled={loading}
+        className={`w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 ${
+          loading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
+        {loading ? "Submitting..." : "Submit Audit"}
+      </button>
+    </div>
+  </form>
+</div>
+
   );
 }
