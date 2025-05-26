@@ -30,18 +30,21 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // ✅ Generate the token
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
     const token = jwt.sign(
       { name: user.name, userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // ✅ Set the cookie with required options
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -54,6 +57,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 });
+
 
 router.post("/logout", (req, res) => {
   res.clearCookie("token", { path: "/" });
