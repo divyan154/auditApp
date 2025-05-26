@@ -22,44 +22,36 @@ router.post("/register", async (req, res) => {
   res.status(200).send("User Registered SuccessFully");
 });
 
+const jwt = require("jsonwebtoken");
+
 router.post("/login", async (req, res) => {
-  console.log("request to login recieved");
   try {
-    const { name, password } = req.body.formData;
+    console.log("request to login received");
+    const { email, password } = req.body;
 
-    // 1. Find user
-    const user = await User.findOne({ name });
-    // console.log(user);
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    const user = await User.findOne({ email });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 2. Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    // ✅ Generate the token
+    const token = jwt.sign(
+      { name: user.name, userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-    // 3. Create payload with only necessary data
-    const payload = {
-      userId: user._id,
-      name: user.name,
-    };
-
-    // 4. Sign token with expiration
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1d",
-    });
+    // ✅ Set the cookie with required options
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "None",
     });
 
-    res.send("Cookie is set");
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(200).json({ message: "Login successful" });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
