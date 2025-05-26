@@ -10,13 +10,18 @@ export default function DashboardPage() {
 
   // Fetch user info from backend
   useEffect(() => {
-    api("/user", {})
+    api
+      .get("/user")
       .then((res) => {
-        if (res.status === 401) throw new Error("Unauthorized");
-        return res.data; // because you’re using `res.send()`
+        setUsername(res.data); // assuming res.data is the username
       })
-      .then((name) => setUsername(name))
-      .catch(() => router.push("/register"));
+      .catch((err) => {
+        if (err.response && err.response.status === 401) {
+          router.push("/register");
+        } else {
+          console.error("An unexpected error occurred:", err);
+        }
+      });
   }, []);
 
   const handleLogout = async () => {
