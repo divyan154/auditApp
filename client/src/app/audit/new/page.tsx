@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import getHumanReadableLocation from "@/services/geoCodeApi";
 
 import api from "@/services/api";
+import toast from "react-hot-toast";
 type Question = {
   _id: string;
   questionType: string;
@@ -117,6 +118,7 @@ export default function AuditPage() {
         throw new Error("Audit submission failed");
       }
       router.push("/dashboard");
+      toast.success("✅ Audit submitted successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submission failed");
     } finally {

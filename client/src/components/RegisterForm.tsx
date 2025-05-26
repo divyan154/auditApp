@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import FormInput from "./FormInput";
 import SubmitButton from "./SubmitButton";
 import api from "@/services/api";
+import toast from "react-hot-toast";
 
 const RegisterForm = () => {
   const router = useRouter();
@@ -65,8 +66,10 @@ const RegisterForm = () => {
       }
 
       router.push("/login");
+      toast.success("✅ Audit submitted successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
+      toast.error("❌ Failed to submit audit.");
     } finally {
       setLoading(false);
     }
@@ -159,7 +162,7 @@ const RegisterForm = () => {
           </div>
 
           <div>
-            <SubmitButton loading={false} />
+            <SubmitButton loading={false} label="Register" />
           </div>
         </form>
       </div>

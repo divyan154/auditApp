@@ -60,7 +60,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -76,6 +75,7 @@ app.get("/user", authenticateToken, (req, res) => {
   // This route is protected by the authenticateToken middleware
   res.status(200).json({ name: req.user.name });
 });
+
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {

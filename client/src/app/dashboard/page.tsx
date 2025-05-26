@@ -3,6 +3,7 @@
 import api from "@/services/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -29,7 +30,9 @@ export default function DashboardPage() {
     await api.post("/logout", {
       credentials: "include",
     });
+
     router.push("/register");
+    toast.success("Logged out successfully!");
   };
 
   const goToAuditPage = () => {

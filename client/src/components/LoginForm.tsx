@@ -5,6 +5,7 @@ import FormInput from "@/components/FormInput";
 import ErrorAlert from "@/components/ErrorAlert";
 import SubmitButton from "@/components/SubmitButton";
 import api from "@/services/api";
+import toast from "react-hot-toast";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -46,6 +47,7 @@ const LoginForm = () => {
 
       if (response.status === 200) {
         router.push("/dashboard"); // Refresh the page to get the updated user state
+        toast.success("Login successful!");
       } else {
         throw new Error(response.data.message || "Login failed");
       }
@@ -78,7 +80,7 @@ const LoginForm = () => {
             onChange={handleChange}
           />
 
-          <SubmitButton loading={loading} />
+          <SubmitButton loading={loading} label="Log in" />
         </form>
       </div>
     </div>
