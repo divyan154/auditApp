@@ -80,7 +80,8 @@ app.use("/", questionRoutes);
 
 app.get("/user", authenticateToken, (req, res) => {
   // console.log(req.user);
-  res.send(req.user.name);
+res.send({ name: req.user.name });
+  
 });
 
 app.listen(3001, () => {
