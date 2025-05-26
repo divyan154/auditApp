@@ -50,10 +50,10 @@ router.post("/login", async (req, res) => {
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
       expiresIn: "1d",
     });
-    res.cookie("token", accessToken, {
+    res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "Lax",
       secure: process.env.NODE_ENV === "production",
+      sameSite: "None",
     });
 
     res.send("Cookie is set");
