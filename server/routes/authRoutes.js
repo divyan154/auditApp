@@ -1,47 +1,43 @@
 const express = require("express");
 const router = express.Router();
-
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
+// Register route
 router.post("/register", async (req, res) => {
   const { name, password, email } = req.body.formData;
-  console.log(name, email, password);
   const user = await User.findOne({ name });
   if (user) {
-    res.send("User Already registered");
-    return;
+    return res.status(400).send("User Already Registered");
   }
-  //   console.log("user", user);
+
   const hashedPassword = await bcrypt.hash(password, 2);
   const newUser = new User({ name, password: hashedPassword, email });
-  //   console.log("new user:", newUser);
   await newUser.save();
-  res.status(200).send("User Registered SuccessFully");
+
+  res.status(200).send("User Registered Successfully");
 });
 
-const jwt = require("jsonwebtoken");
-
+// Login route
 router.post("/login", async (req, res) => {
   try {
     console.log("request to login received");
-    const { email, password } = req.body;
-    console.log("Received login details:", email, password);
 
-    const user = await User.findOne({ email });
+    const { name, password } = req.body;
+    console.log("Received login details:", name, password);
+
+    const user = await User.findOne({ name });
     console.log("User found in DB:", user);
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials (user not found)" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    console.log("Password match:", isPasswordCorrect);
-
     if (!isPasswordCorrect) {
-      return res.status(401).json({ message: "Invalid credentials (wrong password)" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign(
@@ -63,8 +59,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
+// Logout route
 router.post("/logout", (req, res) => {
   res.clearCookie("token", { path: "/" });
   res.status(200).json({ message: "Logged out" });

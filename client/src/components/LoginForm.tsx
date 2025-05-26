@@ -1,10 +1,9 @@
-import React from "react";
-import axios from "axios";
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import FormInput from "@/components/FormInput";
 import ErrorAlert from "@/components/ErrorAlert";
 import SubmitButton from "@/components/SubmitButton";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/services/api";
 
 const LoginForm = () => {
@@ -40,35 +39,33 @@ const LoginForm = () => {
       const response = await api.post(
         "/login",
         {
-          formData: {
-            name: formData.name,
-            password: formData.password,
-          },
+          name: formData.name,
+          password: formData.password,
         },
         {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true, // ⚠️ Important for cookie-based auth
         }
       );
 
-      const data = response.data;
-      if (!response) {
-        throw new Error(data.message || "Login failed");
+      if (response.status === 200) {
+        router.push("/dashboard");
+      } else {
+        throw new Error(response.data.message || "Login failed");
       }
-
-      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         {error && <ErrorAlert message={error} />}
-
         <form className="space-y-6" onSubmit={handleSubmit}>
           <FormInput
             id="name"
@@ -95,7 +92,6 @@ const LoginForm = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
           />
-
           <SubmitButton loading={loading} />
         </form>
       </div>
