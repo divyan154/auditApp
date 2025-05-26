@@ -29,17 +29,19 @@ mongoose
     process.exit(1);
   });
 
-// ✅ CORS Setup
 const allowedOrigins = [
   "https://audit-app-eight.vercel.app",
   "https://audit-app-git-main-divyan154s-projects.vercel.app",
   "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean); // remove undefined/null values
+].filter(Boolean);
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin)
+    ) {
       callback(null, true);
     } else {
       callback(new Error("❌ Not allowed by CORS"));
@@ -47,30 +49,35 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-  exposedHeaders: ["Set-Cookie"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
   optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-// ✅ Middleware
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
+
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Routes
+//✅ Routes
 app.use("/", authRoutes);
 app.use("/", auditRoutes);
 app.use("/", questionRoutes);
 
+app.get("/home", (req, res) => {
+  res.status(200).json({ message: "Welcome to the Audit App API" });
+});
 app.get("/user", authenticateToken, (req, res) => {
-  res.send({ name: req.user.name });
+  // This route is protected by the authenticateToken middleware
+  res.status(200).json({ name: req.user.name });
 });
 
-app.listen(3001, () => {
-  console.log("🚀 Server listening on port 3001");
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+  console.log(`🚀 Server listening on port ${port}`);
 });

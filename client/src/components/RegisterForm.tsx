@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+
 import FormInput from "./FormInput";
 import SubmitButton from "./SubmitButton";
 import api from "@/services/api";
@@ -38,7 +38,7 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      const formBody = new URLSearchParams();
+      const formBody = new FormData();
       formBody.append("name", formData.name);
       formBody.append("email", formData.email);
       formBody.append("password", formData.password);

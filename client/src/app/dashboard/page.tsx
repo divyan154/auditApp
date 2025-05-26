@@ -13,7 +13,8 @@ export default function DashboardPage() {
     api
       .get("/user")
       .then((res) => {
-        setUsername(res.data); // assuming res.data is the username
+        console.log("User data fetched successfully:", res.data);
+        setUsername(res.data.name); // assuming res.data is the username
       })
       .catch((err) => {
         if (err.response && err.response.status === 401) {
@@ -25,8 +26,7 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/logout", {
-      method: "POST",
+    await api.post("/logout", {
       credentials: "include",
     });
     router.push("/register");

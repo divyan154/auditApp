@@ -42,14 +42,15 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { name: user.name, userId: user._id },
-      process.env.JWT_SECRET,
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
+      secure: true, // REQUIRED in production for HTTPS
+      sameSite: "None", // REQUIRED for cross-site cookie sharing
+      maxAge: 7 * 24 * 60 * 60 * 1000, // Optional: expires in 7 days
     });
 
     res.status(200).json({ message: "Login successful" });

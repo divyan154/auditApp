@@ -11,7 +11,6 @@ const LoginForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     password: "",
-    confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,11 +26,6 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
 
     setLoading(true);
 
@@ -51,7 +45,7 @@ const LoginForm = () => {
       );
 
       if (response.status === 200) {
-        router.push("/dashboard");
+        router.push("/dashboard"); // Refresh the page to get the updated user state
       } else {
         throw new Error(response.data.message || "Login failed");
       }
@@ -83,15 +77,7 @@ const LoginForm = () => {
             value={formData.password}
             onChange={handleChange}
           />
-          <FormInput
-            id="confirmPassword"
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-            minLength={6}
-            value={formData.confirmPassword}
-            onChange={handleChange}
-          />
+
           <SubmitButton loading={loading} />
         </form>
       </div>
